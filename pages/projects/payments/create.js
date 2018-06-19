@@ -61,7 +61,8 @@ class PaymentCreate extends React.Component {
       // 获取账户
       const accounts = await web3.eth.getAccounts();
       const sender = accounts[0];
-
+      console.log(64, sender, this.props.project.owner);
+      
       // 检查账户
       if (sender !== this.props.project.owner) {
         return window.alert('只有管理员能创建资金支出请求');

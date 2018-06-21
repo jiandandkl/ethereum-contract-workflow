@@ -7,17 +7,19 @@
     "compile": "node scripts/compile.js",
     "pretest": "npm run compile",
     "test": "mocha tests/",
-    "predeploy": "npm run compile",
+    "predeploy": "npm run test",
     "deploy": "node scripts/deploy.js",
     "dev": "node server.js",
     "build": "next build",
-    "start": "NODE_ENV=production node server.js"
+    "prestart": "npm run build",
+    "start": "pm2 restart pm2.json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@material-ui/core": "^1.2.1",
+    "config": "^1.30.0",
     "fs-extra": "^6.0.1",
     "next": "^6.0.3",
     "next-routes": "^1.4.2",

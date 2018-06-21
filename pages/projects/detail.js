@@ -125,12 +125,18 @@ class ProjectDetail extends React.Component {
       this.setState({ isApproving: i })
 
       const accounts = await web3.eth.getAccounts()
-      const investor = accounts[0]
+      // const investor = accounts[0]
+      const sender = accounts[0]
       const contract = Project(this.props.project.address)
       // const result = await contract.methods
       //   .approvePayment(i)
       //   .send({ from: investor, gas: '5000000'})
-      const result = await contract.methods.approvePayment(i).send({ from: investor, gas: '5000000' });
+      // const result = await contract.methods.approvePayment(i).send({ from: investor, gas: '5000000' });
+      const isInvestor = await contract.methods.investors(sender).call()
+      if (!isInvestor) {
+        return window.alert('只有投资人才有权投票')
+      }
+      const result = await contract.methods.approvePayment(i).send({ from: sender, gas: '5000000' })
 
       window.alert('投票成功')
       setTimeout(() => {
@@ -149,9 +155,16 @@ class ProjectDetail extends React.Component {
       this.setState({ isPlaying: i })
 
       const accounts = await web3.eth.getAccounts()
-      const owner = accounts[0]
+      // const owner = accounts[0]
+      const sender = accounts[0]
+
+      // 检查账户
+      if (sender !== this.props.project.owner) {
+        return window.alert('只有管理员能创建资金支出请求')
+      }
       const contract = Project(this.props.project.address)
-      const result = await contract.methods.doPayment(i).send({ from: owner, gas: '5000000' })
+      // const result = await contract.methods.doPayment(i).send({ from: owner, gas: '5000000' })
+      const result = await contract.methods.doPayment(i).send({ from: sender, gas: '5000000' })
       window.alert('资金划转成功')
       setTimeout(() => {
         location.reload()

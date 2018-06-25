@@ -46,12 +46,12 @@ contract ProjectList {
 
 contract Project {
     using SafeMath for uint;
+
     struct Payment {
         string description;
         uint amount;
         address receiver;
         bool completed;
-        // address[] voters;
         mapping(address => bool) voters;
         uint voterCount;
     }
@@ -61,9 +61,9 @@ contract Project {
     uint public minInvest;
     uint public maxInvest;
     uint public goal;
-    // address[] public investors;
     uint public investorCount;
     mapping(address => uint) public investors;
+
     Payment[] public payments;
 
     modifier ownerOnly() {
@@ -72,7 +72,10 @@ contract Project {
     }
 
     constructor(string _description, uint _minInvest, uint _maxInvest, uint _goal, address _owner) public {
-        owner = msg.sender;
+        require(_maxInvest >= _minInvest);
+        require(_goal >= _minInvest);
+        require(_goal >= _maxInvest);
+
         description = _description;
         minInvest = _minInvest;
         maxInvest = _maxInvest;
@@ -83,51 +86,38 @@ contract Project {
     function contribute() public payable {
         require(msg.value >= minInvest);
         require(msg.value <= maxInvest);
-        // require(address(this).balance <= goal);
+
         uint newBalance = 0;
         newBalance = address(this).balance.add(msg.value);
         require(newBalance <= goal);
-        // investors.push(msg.sender);
-        investors[msg.sender] = msg.value;
-        investorCount += 1;
 
+        if (investors[msg.sender] > 0) {
+            investors[msg.sender] += msg.value;
+        } else {
+            investors[msg.sender] = msg.value;
+            investorCount += 1;
+        }
     }
 
     function createPayment(string _description, uint _amount, address _receiver) ownerOnly public {
-        require(msg.sender == owner);
         Payment memory newPayment = Payment({
             description: _description,
             amount: _amount,
             receiver: _receiver,
             completed: false,
-            // voters: new address[](0)
             voterCount: 0
         });
+
         payments.push(newPayment);
     }
 
     function approvePayment(uint index) public {
         Payment storage payment = payments[index];
-        // bool isInvestor = false;
-        // for (uint i = 0; i < investors.length; i++) {
-        //     isInvestor = investors[i] == msg.sender;
-        //     if (isInvestor) {
-        //         break;
-        //     }
-        // }
-        // require(isInvestor);
+
+        // must be investor to vote
         require(investors[msg.sender] > 0);
 
         // can not vote twice
-        // bool hasVoted = false;
-        // for (uint j = 0; j < payment.voters.length; j++) {
-        //     hasVoted = payment.voters[j] == msg.sender;
-        //     if (hasVoted) {
-        //         break;
-        //     }
-        // }
-        // require(!hasVoted);
-        // payment.voters.push(msg.sender);
         require(!payment.voters[msg.sender]);
 
         payment.voters[msg.sender] = true;
@@ -135,12 +125,12 @@ contract Project {
     }
 
     function doPayment(uint index) ownerOnly public {
-        require(msg.sender == owner);
         Payment storage payment = payments[index];
+
         require(!payment.completed);
         require(address(this).balance >= payment.amount);
-        // require(payment.voters.length > (investors.length / 2));
         require(payment.voterCount > (investorCount / 2));
+
         payment.receiver.transfer(payment.amount);
         payment.completed = true;
     }

@@ -1,6 +1,6 @@
 {
   "name": "ethereum-contract-workflow",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,22 +15,23 @@
     "start": "pm2 restart pm2.json"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "wangshijun <wangshijun2010@gmail.com> (http://github.com/wangshijun)",
+  "license": "MIT",
   "dependencies": {
-    "@material-ui/core": "^1.2.1",
+    "@material-ui/core": "^1.1.0",
     "config": "^1.30.0",
     "fs-extra": "^6.0.1",
     "next": "^6.0.3",
     "next-routes": "^1.4.2",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
+    "react": "^16.4.0",
+    "react-dom": "^16.4.0",
     "solc": "^0.4.24",
     "truffle-hdwallet-provider": "0.0.3",
     "web3": "1.0.0-beta.34"
   },
   "devDependencies": {
-    "ganache-cli": "^6.1.2",
-    "mocha": "^5.2.0"
+    "ganache-cli": "6.1.0",
+    "mocha": "^5.2.0",
+    "pm2": "^2.10.4"
   }
 }

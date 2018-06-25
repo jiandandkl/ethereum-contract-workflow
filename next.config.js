@@ -1,4 +1,4 @@
-const config = require('config')
+const config = require('config');
 
 module.exports = {
   // 只有后端可用的配置
@@ -6,6 +6,6 @@ module.exports = {
 
   // 前后端都可用的配置
   publicRuntimeConfig: {
-    infuraUrl: config.get('infuraUrl')
-  }
-}
+    infuraUrl: config.get('infuraUrl'),
+  },
+};

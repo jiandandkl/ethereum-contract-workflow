@@ -11,8 +11,8 @@ import {
   TableHead,
   TableBody,
   TableRow,
-  TableCell
- } from '@material-ui/core';
+  TableCell,
+} from '@material-ui/core';
 
 import { Link } from '../../routes';
 import web3 from '../../libs/web3';
@@ -31,11 +31,11 @@ class ProjectDetail extends React.Component {
       summary
     );
 
-    const tasks = []
+    const tasks = [];
     for (let i = 0; i < paymentCount; i++) {
-      tasks.push(contract.methods.payments(i).call())
+      tasks.push(contract.methods.payments(i).call());
     }
-    const payments = await Promise.all(tasks)
+    const payments = await Promise.all(tasks);
 
     const project = {
       address: query.address,
@@ -47,29 +47,33 @@ class ProjectDetail extends React.Component {
       investorCount,
       paymentCount,
       owner,
-      payments
+      payments,
     };
+
     console.log(project);
+
     return { project };
   }
 
   constructor(props) {
-    super(props)
+    super(props);
+
     this.state = {
       amount: 0,
       errmsg: '',
       loading: false,
       isApproving: false,
-      isPaying: false
-    }
-    this.onSubmit = this.contributeProject.bind(this)
+      isPaying: false,
+    };
+
+    this.onSubmit = this.contributeProject.bind(this);
   }
 
   getInputHandler(key) {
     return e => {
       console.log(e.target.value);
-      this.setState({ [key]: e.target.value })
-    }
+      this.setState({ [key]: e.target.value });
+    };
   }
 
   async contributeProject() {
@@ -96,8 +100,6 @@ class ProjectDetail extends React.Component {
 
       // 获取账户
       const accounts = await web3.eth.getAccounts();
-      console.log(99, accounts);
-      
       const owner = accounts[0];
 
       // 发起转账
@@ -119,61 +121,60 @@ class ProjectDetail extends React.Component {
       this.setState({ loading: false });
     }
   }
-  
+
   async approvePayment(i) {
     try {
-      this.setState({ isApproving: i })
+      this.setState({ isApproving: i });
 
-      const accounts = await web3.eth.getAccounts()
-      // const investor = accounts[0]
-      const sender = accounts[0]
-      const contract = Project(this.props.project.address)
-      // const result = await contract.methods
-      //   .approvePayment(i)
-      //   .send({ from: investor, gas: '5000000'})
-      // const result = await contract.methods.approvePayment(i).send({ from: investor, gas: '5000000' });
-      const isInvestor = await contract.methods.investors(sender).call()
+      const accounts = await web3.eth.getAccounts();
+      const sender = accounts[0];
+
+      const contract = Project(this.props.project.address);
+      const isInvestor = await contract.methods.investors(sender).call();
       if (!isInvestor) {
-        return window.alert('只有投资人才有权投票')
+        return window.alert('只有投资人才有权投票');
       }
-      const result = await contract.methods.approvePayment(i).send({ from: sender, gas: '5000000' })
 
-      window.alert('投票成功')
+      const result = await contract.methods.approvePayment(i).send({ from: sender, gas: '5000000' });
+
+      window.alert('投票成功');
+
       setTimeout(() => {
-        location.reload()
+        location.reload();
       }, 1000);
-    } catch (error) {
-      console.error(error);
-      window.alert(err.message || err.toString())
+    } catch (err) {
+      console.error(err);
+      window.alert(err.message || err.toString());
     } finally {
-      this.setState({ isApproving: false })
+      this.setState({ isApproving: false });
     }
   }
 
   async doPayment(i) {
     try {
-      this.setState({ isPlaying: i })
+      this.setState({ isPaying: i });
 
-      const accounts = await web3.eth.getAccounts()
-      // const owner = accounts[0]
-      const sender = accounts[0]
+      const accounts = await web3.eth.getAccounts();
+      const sender = accounts[0];
 
       // 检查账户
       if (sender !== this.props.project.owner) {
-        return window.alert('只有管理员能创建资金支出请求')
+        return window.alert('只有管理员能创建资金支出请求');
       }
-      const contract = Project(this.props.project.address)
-      // const result = await contract.methods.doPayment(i).send({ from: owner, gas: '5000000' })
-      const result = await contract.methods.doPayment(i).send({ from: sender, gas: '5000000' })
-      window.alert('资金划转成功')
+
+      const contract = Project(this.props.project.address);
+      const result = await contract.methods.doPayment(i).send({ from: sender, gas: '5000000' });
+
+      window.alert('资金划转成功');
+
       setTimeout(() => {
-        location.reload()
+        location.reload();
       }, 1000);
     } catch (err) {
       console.error(err);
-      window.alert(err.message || err.toString())
+      window.alert(err.message || err.toString());
     } finally {
-      this.setState({ isPlaying: false })
+      this.setState({ isPaying: false });
     }
   }
 
@@ -224,7 +225,7 @@ class ProjectDetail extends React.Component {
             />
             <Button size="small" variant="raised" color="primary" onClick={this.onSubmit}>
               {this.state.loading ? <CircularProgress color="secondary" size={24} /> : '立即投资'}
-             </Button>
+            </Button>
             {!!this.state.errmsg && (
               <Typography component="p" style={{ color: 'red' }}>
                 {this.state.errmsg}
@@ -237,38 +238,36 @@ class ProjectDetail extends React.Component {
   }
 
   renderPayments(project) {
-    console.log(project);
+    if (project.payments.length === 0) {
+      return (
+        <Paper style={{ padding: '15px' }}>
+          <p>还没有数据</p>
+          <Link route={`/projects/${project.address}/payments/create`}>
+            <Button variant="raised" color="primary">
+              创建资金支出请求
+            </Button>
+          </Link>
+        </Paper>
+      )
+    }
 
     return (
       <Paper style={{ padding: '15px' }}>
-      <Table style={{ marginBottom: '30px' }}>
-      <TableHead>
-        <TableRow>
-          <TableCell>支出理由</TableCell>
-          <TableCell numeric>支出金额</TableCell>
-          <TableCell>收款人</TableCell>
-          <TableCell>已完成？</TableCell>
-          <TableCell>投票状态</TableCell>
-          <TableCell>操作</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {/* {project.payments.map(payment => {
-          return (
-            <TableRow key={payment.id}>
-              <TableCell>{payment.description}</TableCell>
-              <TableCell numeric>{web3.utils.fromWei(payment.amount, 'ether')} ETH</TableCell>
-              <TableCell>{payment.receiver}</TableCell>
-              <TableCell>{payment.completed ? '是' : '否'}</TableCell>
-              <TableCell>{payment.voterCount}/{project.investorCount}</TableCell>
-              <TableCell></TableCell>
+        <Table style={{ marginBottom: '30px' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>支出理由</TableCell>
+              <TableCell numeric>支出金额</TableCell>
+              <TableCell>收款人</TableCell>
+              <TableCell>已完成？</TableCell>
+              <TableCell>投票状态</TableCell>
+              <TableCell>操作</TableCell>
             </TableRow>
-          );
-        })} */}
-        {project.payments.map((payment, index) => this.renderPaymentRow(payment, index, project))}
-
-      </TableBody>
-    </Table>
+          </TableHead>
+          <TableBody>
+            {project.payments.map((payment, index) => this.renderPaymentRow(payment, index, project))}
+          </TableBody>
+        </Table>
         <Link route={`/projects/${project.address}/payments/create`}>
           <Button variant="raised" color="primary">
             创建资金支出请求
@@ -279,17 +278,16 @@ class ProjectDetail extends React.Component {
   }
 
   isApproving(i) {
-    return typeof this.state.isApproving === 'number' && this.state.isApproving === i
+    return typeof this.state.isApproving === 'number' && this.state.isApproving === i;
   }
 
   isPaying(i) {
-    return typeof this.state.isPaying === 'number' && this.state.isPaying === i
+    return typeof this.state.isPaying === 'number' && this.state.isPaying === i;
   }
 
   renderPaymentRow(payment, index, project) {
     const canApprove = !payment.completed;
     const canDoPayment = !payment.completed && payment.voterCount / project.investorCount > 0.5;
-
     return (
       <TableRow key={index}>
         <TableCell>{payment.description}</TableCell>
@@ -306,10 +304,8 @@ class ProjectDetail extends React.Component {
             </Button>
           )}
           {canDoPayment && (
-            <Button size='small' color='primary' onClick={() => this.doPayment(index)} >
-              {this.isPaying(index)
-                ? <CircularProgress color='primary' size={24} />
-                : '资金划转'}
+            <Button size="small" color="primary" onClick={() => this.doPayment(index)}>
+              {this.isPaying(index) ? <CircularProgress color="primary" size={24} /> : '资金划转'}
             </Button>
           )}
         </TableCell>

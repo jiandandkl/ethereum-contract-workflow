@@ -13,9 +13,10 @@ class PaymentCreate extends React.Component {
 
     const summary = await contract.methods.getSummary().call();
     const description = summary[0];
-    const owner = summary[7]
+    const balance = summary[4];
+    const owner = summary[7];
 
-    return { project: { address: query.address, description, owner } };
+    return { project: { address: query.address, description, owner, balance } };
   }
 
   constructor(props) {
@@ -53,6 +54,7 @@ class PaymentCreate extends React.Component {
     if (!web3.utils.isAddress(receiver)) {
       return this.setState({ errmsg: '收款人账户地址不正确' });
     }
+
     const amountInWei = web3.utils.toWei(amount, 'ether');
 
     try {
@@ -61,12 +63,12 @@ class PaymentCreate extends React.Component {
       // 获取账户
       const accounts = await web3.eth.getAccounts();
       const sender = accounts[0];
-      console.log(64, sender, this.props.project.owner);
-      
+
       // 检查账户
       if (sender !== this.props.project.owner) {
         return window.alert('只有管理员能创建资金支出请求');
       }
+
       // 创建项目
       const contract = Project(this.props.project.address);
       const result = await contract.methods
@@ -112,7 +114,9 @@ class PaymentCreate extends React.Component {
               value={this.state.amount}
               onChange={this.getInputHandler('amount')}
               margin="normal"
-              InputProps={{ endAdornment: 'ETH' }}
+              InputProps={{
+                endAdornment: `可支出资金 ${web3.utils.fromWei(this.props.project.balance.toString(), 'ether')} ETH`,
+              }}
             />
             <TextField
               fullWidth
